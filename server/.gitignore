@@ -62,5 +62,5 @@ typings/
 .next
 
 # Config file
-config/key.js
-config/middleware.js
+# config/key.js
+# config/middleware.js
