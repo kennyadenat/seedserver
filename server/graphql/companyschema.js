@@ -8,8 +8,12 @@ const GraphQLInt = require('graphql').GraphQLInt;
 const GraphQLID = require('graphql').GraphQLID;
 const GraphQLDate = require('graphql-date');
 const Company = require('../models/seedcompany');
+const Data = require('../queryobject/companydata')
+const _ = require('underscore');
 
 
+
+/* Defines the Company GraphQLObjectType */
 const companyType = new GraphQLObjectType({
   name: 'Company',
   fields: function () {
@@ -48,7 +52,7 @@ const companyType = new GraphQLObjectType({
   }
 })
 
-
+/* Defines the Company List Item which is used for Pagination */
 const companyList = new GraphQLObjectType({
   name: 'CompanyList',
   fields: function () {
@@ -88,10 +92,98 @@ const companyList = new GraphQLObjectType({
 })
 
 
+/* Defines the GraphQLObjectType for the Company State Data */
+const dataCompanyState = new GraphQLObjectType({
+  name: 'dataCompanyState',
+  fields: function () {
+    return {
+      state: {
+        type: GraphQLString
+      },
+      total: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+/* Defines the GraphQLObjectType for the Company State Data */
+const dataCompanyDate = new GraphQLObjectType({
+  name: 'dataCompanyDate',
+  fields: function () {
+    return {
+      date: {
+        type: GraphQLString
+      },
+      total: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
 const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
     return {
+      allcompany: {
+        type: companyType,
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _allCompany = await Company.findOne({
+            region: params.id
+          }).exec();
+
+          return _allCompany;
+        }
+      },
+      admincompanys: {
+        type: companyList,
+        args: {
+          id: {
+            type: GraphQLString
+          },
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createon: -1
+            }
+          };
+
+          if (params.search) {
+            return Company.paginate({
+              name: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          } else {
+            // Check if params.id is null or empty to determine the query type
+            return Company.paginate({}, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          }
+        }
+      },
       companys: {
         type: companyList,
         args: {
@@ -117,13 +209,25 @@ const queryType = new GraphQLObjectType({
             }
           };
 
-          // Check if params.id is null or empty to determine the query type
-          return Company.paginate({
-            region: params.id
-          }, options, function (err, resp) {
-            if (err) return next(err);
-            return resp;
-          });
+          if (params.search) {
+            return Company.paginate({
+              region: params.id,
+              name: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          } else {
+            // Check if params.id is null or empty to determine the query type
+            return Company.paginate({
+              region: params.id
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          }
         }
       },
       company: {
@@ -141,6 +245,58 @@ const queryType = new GraphQLObjectType({
           }
           return _company;
 
+        }
+      },
+      dataCompanyState: {
+        type: new GraphQLList(dataCompanyState),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _company = await Company.find({
+            region: params.id
+          }).exec();
+
+          const views = _
+            .chain(_company)
+            .groupBy('state')
+            .map(function (value, key) {
+              return {
+                state: key,
+                total: value.length,
+              }
+            })
+            .value();
+
+          return views;
+        }
+      },
+      dataCompanyDate: {
+        type: new GraphQLList(dataCompanyDate),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _company = await Company.find({
+            region: params.id
+          }).exec();
+
+          var dates = _
+            .chain(_company)
+            .groupBy('formatDate')
+            .map(function (value, key) {
+              return {
+                date: key,
+                total: value.length
+              }
+            })
+            .value();
+
+          return dates;
         }
       }
     }
@@ -180,11 +336,25 @@ const mutation = new GraphQLObjectType({
           }
         },
         resolve: function (root, params) {
+
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createon: -1
+            }
+          };
+
           const _company = new Company(params);
           const newCompany = _company.save();
           if (!newCompany) {
             throw new Error('Error');
           }
+          // return Company.paginate({
+          //   region: params.region
+          // }, options, function (err, resp) {
+          //   return resp;
+          // });
           return newCompany;
         }
       },
@@ -246,6 +416,8 @@ const mutation = new GraphQLObjectType({
           }
         },
         resolve: function (root, params) {
+          /* Delete the Company, The Samples and the Germination 
+          and Purity if exists */
           const _company = Company.findByIdAndRemove(params.id).exec();
           if (!_company) {
             throw new Error('Error');

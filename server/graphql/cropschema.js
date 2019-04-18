@@ -82,6 +82,16 @@ const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
     return {
+      allCrop: {
+        type: new GraphQLList(cropType),
+        resolve: function () {
+          const _crop = Crop.find().sort('name').exec();
+          if (!_crop) {
+            throw new Error('Error');
+          }
+          return _crop;
+        }
+      },
       crops: {
         type: cropList,
         args: {

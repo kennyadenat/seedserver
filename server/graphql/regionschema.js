@@ -1,10 +1,8 @@
 const GraphQLSchema = require('graphql').GraphQLSchema;
 const GraphQLObjectType = require('graphql').GraphQLObjectType;
 const GraphQLString = require('graphql').GraphQLString;
-const GraphQLInt = require('graphql').GraphQLInt;
 const GraphQLNonNull = require('graphql').GraphQLNonNull;
 const GraphQLList = require('graphql').GraphQLList;
-const GraphQLDate = require('graphql-date');
 const Region = require('../models/region');
 
 
@@ -44,7 +42,6 @@ const queryType = new GraphQLObjectType({
           if (!_region) {
             throw new Error('Error');
           }
-          console.log(_region);
           return _region;
         }
       },

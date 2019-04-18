@@ -67,11 +67,35 @@ const SeedSchema = new Schema({
     type: Date,
     default: Date.now
   },
-  purity: {
-    type: Number
+  time: {
+    type: String
   },
-  germination: {
-    type: Number,
+  puritykg: {
+    type: String
+  },
+  purityper: {
+    type: String
+  },
+  purityremarks: {
+    type: String
+  },
+  normal: {
+    type: String,
+  },
+  abnormal: {
+    type: String,
+  },
+  hard: {
+    type: String,
+  },
+  dead: {
+    type: String,
+  },
+  germper: {
+    type: String,
+  },
+  germremarks: {
+    type: String,
   }
 
 }, {
@@ -102,7 +126,8 @@ SeedSchema.statics.generatereference = async function (params, callback) {
     name: params.crop
   }).exec();
 
-  const reference = _region.alias + "/" + _crop.tag + "/";
+  const todayYear = new Date().getFullYear();
+  const reference = _region.alias + "/" + todayYear + "/" + _crop.tag + "/";
 
   const _track = await TrackRecord.findOne({
     region: params.region

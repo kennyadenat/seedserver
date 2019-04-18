@@ -63,11 +63,35 @@ const seedType = new GraphQLObjectType({
       createdon: {
         type: GraphQLDate
       },
-      purity: {
-        type: GraphQLInt
+      time: {
+        type: GraphQLString
       },
-      germination: {
-        type: GraphQLInt
+      puritykg: {
+        type: GraphQLString
+      },
+      purityper: {
+        type: GraphQLString
+      },
+      purityremarks: {
+        type: GraphQLString
+      },
+      normal: {
+        type: GraphQLString
+      },
+      abnormal: {
+        type: GraphQLString
+      },
+      hard: {
+        type: GraphQLString
+      },
+      dead: {
+        type: GraphQLString
+      },
+      germper: {
+        type: GraphQLString
+      },
+      germremarks: {
+        type: GraphQLString
       }
     }
   }
@@ -117,6 +141,72 @@ const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
     return {
+      allseeds: {
+        type: seedList,
+        args: {
+          id: {
+            type: GraphQLString
+          },
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createon: -1
+            }
+          };
+
+          // Check if params.id is null or empty to determine the query type
+          return Seed.paginate({
+            region: params.id
+          }, options, function (err, resp) {
+            if (err) return next(err);
+            return resp;
+          });
+        }
+      },
+      adminseeds: {
+        type: seedList,
+        args: {
+          id: {
+            type: GraphQLString
+          },
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createon: -1
+            }
+          };
+
+          // Check if params.id is null or empty to determine the query type
+          return Seed.paginate({}, options, function (err, resp) {
+            if (err) return next(err);
+            return resp;
+          });
+        }
+      },
       seeds: {
         type: seedList,
         args: {
@@ -239,21 +329,14 @@ const mutation = new GraphQLObjectType({
           createdon: {
             type: GraphQLDate
           },
-          purity: {
-            type: GraphQLInt
-          },
-          germination: {
-            type: GraphQLInt
-          }
+          // purity: {
+          //   type: GraphQLInt
+          // },
+          // germination: {
+          //   type: GraphQLInt
+          // }
         },
         resolve: function (root, params) {
-          // const _seed = new Seed(params);
-          // const newSeed = _seed.save();
-          // if (!newSeed) {
-          //   throw new Error('Error');
-          // }
-          // return newSeed;
-          console.log(params);
           return Seed.generatereference(params, function (err, res) {
             console.log(err, res);
           });

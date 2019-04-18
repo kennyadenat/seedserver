@@ -7,6 +7,42 @@ const mongoose = require('mongoose');
 const graphqlHTTP = require('express-graphql');
 const keys = require('./config/key');
 const cors = require('cors');
+
+
+const _ = require('underscore')
+const Coy = require('./models/seedcompany');
+
+getCoy();
+
+
+async function getCoy() {
+  const _coy = await Coy.find().exec();
+  // console.log(_coy);
+  //Formats the results based on the date
+  var views = _
+    .chain(_coy)
+    .groupBy('state')
+    .map(function (value, key) {
+      return {
+        state: key,
+        counts: value.length,
+      }
+    })
+    .value();
+
+  var dates = _
+    .chain(_coy)
+    .groupBy('formatDate')
+    .map(function (value, key) {
+      return {
+        date: key,
+        total: value.length
+      }
+    })
+    .value();
+
+  console.log(dates);
+}
 // import {
 //   makeExecutableSchema,
 //   addMockFunctionsToSchema,

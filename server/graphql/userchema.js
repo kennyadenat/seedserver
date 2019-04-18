@@ -52,7 +52,6 @@ const userType = new GraphQLObjectType({
     salt: {
       type: GraphQLString
     },
-
     createdon: {
       type: GraphQLDate
     }
@@ -124,8 +123,41 @@ const queryType = new GraphQLObjectType({
             }
           };
 
-          return User.paginate({}, options, function (err, result) {
-            console.log(result);
+          return User.paginate({
+            role: "Staff",
+            staffrole: "Seed Analyst"
+          }, options, function (err, result) {
+            return result;
+          });
+
+        }
+      },
+      certusers: {
+        type: userList,
+        args: {
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              email: 1
+            }
+          };
+
+          return User.paginate({
+            role: "Staff",
+            staffrole: "Seed Certification"
+          }, options, function (err, result) {
             return result;
           });
 
@@ -196,6 +228,7 @@ const mutation = new GraphQLObjectType({
           const newUser = new User(params);
           const newAnalyst = newUser.save();
           if (!newAnalyst) {
+            console.log(newAnalyst);
             throw new Error('Error');
           }
           return newAnalyst;

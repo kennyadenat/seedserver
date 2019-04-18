@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const mongoosePaginate = require('mongoose-paginate-v2');
-
+const moment = require('moment');
 
 const CompanySchema = new Schema({
   id: {
@@ -41,12 +41,18 @@ const CompanySchema = new Schema({
   },
   createon: {
     type: Date,
-    default: Date.now
+    default: Date
   }
 }, {
   timestamps: true
 })
 
 CompanySchema.plugin(mongoosePaginate);
+
+CompanySchema.virtual('formatDate').get(function () {
+  // return this.createon;
+  // return this.createon.toDateString();
+  return moment(this.createon).format('YYYY-MM-DD');
+})
 
 module.exports = mongoose.model('Company', CompanySchema);

@@ -121,6 +121,50 @@ const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
     return {
+      adminpuritys: {
+        type: purityList,
+        args: {
+          id: {
+            type: GraphQLString
+          },
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createdon: -1
+            }
+          };
+          if (params.search) {
+            // Check if params.id is null or empty to determine the query type
+            return Purity.paginate({
+              referenceno: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          } else {
+            // Check if params.id is null or empty to determine the query type
+            return Purity.paginate({}, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          }
+
+        }
+      },
       puritys: {
         type: purityList,
         args: {
@@ -145,14 +189,27 @@ const queryType = new GraphQLObjectType({
               createdon: -1
             }
           };
-          console.log(params);
-          // Check if params.id is null or empty to determine the query type
-          return Purity.paginate({
-            region: params.id
-          }, options, function (err, resp) {
-            if (err) return next(err);
-            return resp;
-          });
+          if (params.search) {
+            // Check if params.id is null or empty to determine the query type
+            return Purity.paginate({
+              region: params.id,
+              referenceno: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          } else {
+            // Check if params.id is null or empty to determine the query type
+            return Purity.paginate({
+              region: params.id
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          }
+
         }
       },
       purity: {
@@ -218,6 +275,7 @@ const queryType = new GraphQLObjectType({
     }
   }
 });
+
 
 const mutation = new GraphQLObjectType({
   name: 'mutation',
@@ -326,6 +384,7 @@ const mutation = new GraphQLObjectType({
               datetested: params.datetested,
             }, function (err) {
               if (err) return next(err);
+              updateSeedSample(params);
             });
           } else {
 
@@ -334,6 +393,7 @@ const mutation = new GraphQLObjectType({
             if (!newPurity) {
               throw new Error('Error');
             }
+            updateSeedSample(newPurity);
             return newPurity;
           }
         }
@@ -434,8 +494,10 @@ const mutation = new GraphQLObjectType({
             type: GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: function (root, params) {
-          const _purity = Purity.findByIdAndRemove(params.id).exec()
+        resolve: async function (root, params) {
+          const _purity = await Purity.findOneAndRemove({
+            _id: params.id
+          }).exec();
           if (!_purity) {
             throw new Error('Error')
           }
@@ -457,6 +519,18 @@ function calculateRemarks(params) {
     } else {
       return remarks;
     }
+  })
+}
+
+function updateSeedSample(params) {
+  Sample.findOneAndUpdate({
+    referenceno: params.referenceno
+  }, {
+    puritykg: params.purityscorekg,
+    purityper: params.purityscoreper,
+    purityremarks: params.remarks
+  }, function (err) {
+
   })
 }
 

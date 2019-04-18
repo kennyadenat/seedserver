@@ -173,6 +173,65 @@ const query = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
     return {
+      allgermination: {
+        type: germinationType,
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _allCompany = await Germination.findOne({
+            region: params.id
+          }).exec();
+
+          return _allCompany;
+        }
+      },
+      admingerminations: {
+        type: germinationList,
+        args: {
+          id: {
+            type: GraphQLString
+          },
+          limit: {
+            type: GraphQLInt
+          },
+          page: {
+            type: GraphQLInt
+          },
+          search: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const options = {
+            page: params.page,
+            limit: params.limit,
+            sort: {
+              createon: -1
+            }
+          };
+
+          if (params.search) {
+            return Germination.paginate({
+              referenceno: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, res) {
+              if (err) return next(err);
+              return res;
+            });
+          } else {
+            return Germination.paginate({}, options, function (err, res) {
+              if (err) return next(err);
+              return res;
+            });
+          }
+
+
+        }
+      },
       germinations: {
         type: germinationList,
         args: {
@@ -197,10 +256,27 @@ const query = new GraphQLObjectType({
               createon: -1
             }
           };
-          return Germination.paginate({}, options, function (err, res) {
-            if (err) return next(err);
-            return res;
-          });
+
+          if (params.search) {
+            return Germination.paginate({
+              region: params.id,
+              referenceno: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, res) {
+              if (err) return next(err);
+              return res;
+            });
+          } else {
+            return Germination.paginate({
+              region: params.id
+            }, options, function (err, res) {
+              if (err) return next(err);
+              return res;
+            });
+          }
+
+
         }
       },
       germination: {
@@ -316,19 +392,19 @@ const mutation = new GraphQLObjectType({
             type: GraphQLNonNull(GraphQLString)
           },
           normal: {
-            type: GraphQLInt
+            type: GraphQLString
           },
           abnormal: {
-            type: GraphQLInt
+            type: GraphQLString
           },
           hard: {
-            type: GraphQLInt
+            type: GraphQLString
           },
           dead: {
-            type: GraphQLInt
+            type: GraphQLString
           },
           germinationpercentage: {
-            type: GraphQLInt
+            type: GraphQLString
           },
           remarks: {
             type: GraphQLString
@@ -361,7 +437,6 @@ const mutation = new GraphQLObjectType({
           const options = ["Hard", "Normal", "Dead", "Abnormal"];
 
           options.forEach(element => {
-            let scores = 0;
             switch (element) {
               case "Hard":
                 params.hard = getAnalysisScore(params, element);
@@ -417,13 +492,32 @@ const mutation = new GraphQLObjectType({
               datetested: params.datetested,
               createdon: params.createdon
             }, function (err) {
+              // Updates the Seed Sample Detials
+              updateSeedSample(params);
+
               params.analysiscount.forEach(element => {
-                AnalysisModel.findOneAndUpdate({
-                  _id: element._id
-                }, {
-                  analysistype: element.analysistype,
-                  score: element.score
-                }, function (errs) {});
+                /* Check if Analysis count already exist. 
+                If yes, just update and if no, create a new one */
+                console.log(element);
+                if (element._id != null) {
+                  AnalysisModel.findOneAndUpdate({
+                    _id: element._id
+                  }, {
+                    analysistype: element.analysistype,
+                    score: element.score
+                  }, function (errs) {});
+                } else {
+                  const analysis = new AnalysisModel({
+                    germinationid: exist._id,
+                    analysistype: element.analysistype,
+                    score: element.score
+                  })
+                  analysis.save();
+                  exist.analysiscount.push(analysis);
+                }
+              });
+              return exist.save(function (err, res) {
+                // return res;
               });
             })
           } else {
@@ -449,8 +543,13 @@ const mutation = new GraphQLObjectType({
               datetested: params.datetested,
               createdon: params.createdon
             })
+
             _germination.save(function (err) {
               if (err) console.log(err);
+
+              // Updates the Seed Sample Detials
+              updateSeedSample(params);
+
               params.analysiscount.forEach(element => {
                 const analysis = new AnalysisModel({
                   germinationid: _germination._id,
@@ -554,12 +653,21 @@ const mutation = new GraphQLObjectType({
             type: GraphQLNonNull(GraphQLString)
           }
         },
-        resolve: function (root, params) {
-          const _germination = Germination.findByIdAndRemove(params.id).exec();
-          if (!_germination) {
+        resolve: async function (root, params) {
+          const _germination = await Germination.findOneAndRemove({
+            _id: params.id
+          }).exec();
+          if (_germination) {
+            _germination.analysiscount.forEach(element => {
+              return AnalysisModel.findOneAndRemove({
+                _id: element
+              }, function (err) {})
+            });
+            return _germination;
+          } else {
             throw new Error('Error');
           }
-          return _germination;
+
         }
       },
       deleteanalysis: {
@@ -598,6 +706,26 @@ function getAnalysisScore(params, element) {
   } else {
     return actualScore;
   }
+}
+
+async function checkAnalysis(params, element) {
+  const _check = await AnalysisModel.findById(element._id).exec();
+  return _check;
+}
+
+function updateSeedSample(params) {
+  Sample.findByIdAndUpdate({
+    referenceno: params.referenceno
+  }, {
+    normal: params.normal,
+    abnormal: params.abnormal,
+    hard: params.hard,
+    dead: params.dead,
+    germper: params.germinationpercentage,
+    germremarks: params.remarks
+  }, function (err) {
+
+  })
 }
 
 module.exports = new GraphQLSchema({
