@@ -5,7 +5,8 @@ module.exports = {
     callbackURL: ""
   },
   mongobb: {
-    url: "mongodb://localhost:27017/seedpro"
+    url: "mongodb://localhost:27017/seedpro",
+    prod: "mongodb+srv://seedpro:Iremide-09@vigorlab-4gwpc.mongodb.net/test?retryWrites=true"
   },
   session: {
     cookieKey: "icanhehtyurjnghnk575768nnfhndvj4iunfurnnbg"

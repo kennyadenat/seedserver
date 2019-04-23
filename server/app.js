@@ -12,9 +12,6 @@ const cors = require('cors');
 const _ = require('underscore')
 const Coy = require('./models/seedcompany');
 
-getCoy();
-
-
 async function getCoy() {
   const _coy = await Coy.find().exec();
   // console.log(_coy);
@@ -108,7 +105,7 @@ app.use('/nasc', cors(), graphqlHTTP({
 }));
 
 //Mongoose Connection Setup
-mongoose.connect(keys.mongobb.url, {
+mongoose.connect(keys.mongobb.prod, {
     promiseLibrary: require('bluebird'),
     useNewUrlParser: true
   })
