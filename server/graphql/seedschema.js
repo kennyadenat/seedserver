@@ -138,7 +138,7 @@ const seedList = new GraphQLObjectType({
 
 /* Defines the GraphQLObjectType for the Company State Data */
 const dataSampleCrop = new GraphQLObjectType({
-  name: 'dataCompanyState',
+  name: 'dataSampleCrop',
   fields: function () {
     return {
       crop: {
@@ -167,7 +167,7 @@ const dataSampleDate = new GraphQLObjectType({
 })
 
 const dataSampleClass = new GraphQLObjectType({
-  name: 'dataCompanyDate',
+  name: 'dataSampleClass',
   fields: function () {
     return {
       class: {
