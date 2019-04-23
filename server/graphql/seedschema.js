@@ -8,7 +8,7 @@ const GraphQLString = require('graphql').GraphQLString;
 const GraphQLInt = require('graphql').GraphQLInt;
 const GraphQLDate = require('graphql-date');
 const Seed = require('../models/seedsample');
-
+const _ = require('underscore');
 
 
 const seedType = new GraphQLObjectType({
@@ -130,6 +130,50 @@ const seedList = new GraphQLObjectType({
         type: GraphQLString
       },
       pagingCounter: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+/* Defines the GraphQLObjectType for the Company State Data */
+const dataSampleCrop = new GraphQLObjectType({
+  name: 'dataCompanyState',
+  fields: function () {
+    return {
+      crop: {
+        type: GraphQLString
+      },
+      total: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+/* Defines the GraphQLObjectType for the Company State Data */
+const dataSampleDate = new GraphQLObjectType({
+  name: 'dataSampleDate',
+  fields: function () {
+    return {
+      date: {
+        type: GraphQLString
+      },
+      total: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+const dataSampleClass = new GraphQLObjectType({
+  name: 'dataCompanyDate',
+  fields: function () {
+    return {
+      class: {
+        type: GraphQLString
+      },
+      total: {
         type: GraphQLString
       }
     }
@@ -272,6 +316,65 @@ const queryType = new GraphQLObjectType({
             if (err) return next(err);
           })
         }
+      },
+      dataSampleCrop: {
+        type: new GraphQLList(dataSampleCrop),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _seed = await Seed.find({
+            region: params.id
+          }).exec();
+
+          const views = _
+            .chain(_seed)
+            .groupBy('crop')
+            .map(function (value, key) {
+              return {
+                crop: key,
+                total: value.length
+              }
+            })
+            .value();
+          return views;
+        }
+      },
+      dataSampleClass: {
+        type: new GraphQLList(dataSampleClass),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _seed = await Seed.find({
+            region: params.id
+          }).exec();
+
+          const views = _
+            .chain(_seed)
+            .groupBy('seedclass')
+            .map(function (value, key) {
+              return {
+                crop: key,
+                total: value.length
+              }
+            })
+            .value();
+          return views;
+        }
+      },
+      dataSampleDate: {
+        type: new GraphQLList(dataSampleDate),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+
       }
     }
   }

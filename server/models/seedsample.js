@@ -175,4 +175,10 @@ function updateTrack(params, counts, _track) {
   return newSeedSample;
 }
 
+SeedSchema.virtual('formatDate').get(function () {
+  // return this.createon;
+  // return this.createon.toDateString();
+  return moment(this.createon).format('YYYY-MM-DD');
+})
+
 const SeedSample = module.exports = mongoose.model('Seed', SeedSchema);

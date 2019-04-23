@@ -22,6 +22,9 @@ const userType = new GraphQLObjectType({
     email: {
       type: GraphQLString
     },
+    fullname: {
+      type: GraphQLString
+    },
     firstname: {
       type: GraphQLString
     },
@@ -57,6 +60,7 @@ const userType = new GraphQLObjectType({
     }
   })
 });
+
 
 
 const userList = new GraphQLObjectType({
@@ -97,6 +101,7 @@ const userList = new GraphQLObjectType({
   }
 })
 
+
 const queryType = new GraphQLObjectType({
   name: 'Query',
   fields: function () {
@@ -129,7 +134,6 @@ const queryType = new GraphQLObjectType({
           }, options, function (err, result) {
             return result;
           });
-
         }
       },
       certusers: {
@@ -176,6 +180,24 @@ const queryType = new GraphQLObjectType({
             throw new Error('Error');
           }
           return _user;
+        }
+      },
+      regionusers: {
+        type: new GraphQLList(userType),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+          const _users = User.find({
+            region: params.id,
+            staffrole: 'Seed Analyst'
+          }).exec();
+          if (!_users) {
+            throw new Error('Error');
+          }
+          return _users;
         }
       }
     }

@@ -103,6 +103,11 @@ UserSchema.virtual('staffid').set(function (staffid) {
   return this._password;
 });
 
+UserSchema.virtual('fullname').get(function () {
+  const fullnames = this.firstname + " " + this.lastname;
+  return fullnames;
+})
+
 UserSchema.statics.authentication = async function (users) {
   const Users = await User.findOne({
     email: users.email
