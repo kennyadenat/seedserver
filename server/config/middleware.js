@@ -1,5 +1,6 @@
 const csvFilePath = './public/crop.csv'
 const csv = require('csvtojson/v2');
+const Crop = require('./models/crop');
 csv({
     noheader: false,
     headers: ['_id', 'name', 'germpass', 'purpass', 'time']
@@ -17,6 +18,7 @@ csv({
 
 const csvFilePathv = './public/variety.csv'
 const csvv = require('csvtojson/v2');
+const Variety = require('./models/variety');
 csvv({
     noheader: false,
     headers: ['_id', 'cropid', 'name', 'cropname']
@@ -48,3 +50,36 @@ csv({
       console.log(doc);
     })
   })
+
+
+const _ = require('underscore')
+const Coy = require('./models/seedcompany');
+
+async function getCoy() {
+  const _coy = await Coy.find().exec();
+  // console.log(_coy);
+  //Formats the results based on the date
+  var views = _
+    .chain(_coy)
+    .groupBy('state')
+    .map(function (value, key) {
+      return {
+        state: key,
+        counts: value.length,
+      }
+    })
+    .value();
+
+  var dates = _
+    .chain(_coy)
+    .groupBy('formatDate')
+    .map(function (value, key) {
+      return {
+        date: key,
+        total: value.length
+      }
+    })
+    .value();
+
+  console.log(dates);
+}

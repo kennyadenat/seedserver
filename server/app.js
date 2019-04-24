@@ -8,45 +8,7 @@ const graphqlHTTP = require('express-graphql');
 const keys = require('./config/key');
 const cors = require('cors');
 
-
-const _ = require('underscore')
-const Coy = require('./models/seedcompany');
-
-async function getCoy() {
-  const _coy = await Coy.find().exec();
-  // console.log(_coy);
-  //Formats the results based on the date
-  var views = _
-    .chain(_coy)
-    .groupBy('state')
-    .map(function (value, key) {
-      return {
-        state: key,
-        counts: value.length,
-      }
-    })
-    .value();
-
-  var dates = _
-    .chain(_coy)
-    .groupBy('formatDate')
-    .map(function (value, key) {
-      return {
-        date: key,
-        total: value.length
-      }
-    })
-    .value();
-
-  console.log(dates);
-}
-// import {
-//   makeExecutableSchema,
-//   addMockFunctionsToSchema,
-//   mergeSchemas
-// } from 'graphql-tools';
 const mergeSchemas = require('graphql-tools').mergeSchemas;
-
 
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
@@ -105,7 +67,7 @@ app.use('/nasc', cors(), graphqlHTTP({
 }));
 
 //Mongoose Connection Setup
-mongoose.connect(keys.mongobb.prod, {
+mongoose.connect(keys.mongodb.prod, {
     promiseLibrary: require('bluebird'),
     useNewUrlParser: true
   })
@@ -132,5 +94,7 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
 
 module.exports = app;

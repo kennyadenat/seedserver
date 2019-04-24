@@ -359,7 +359,7 @@ const queryType = new GraphQLObjectType({
             .groupBy('seedclass')
             .map(function (value, key) {
               return {
-                crop: key,
+                class: key,
                 total: value.length
               }
             })
@@ -374,7 +374,23 @@ const queryType = new GraphQLObjectType({
             type: GraphQLString
           }
         },
+        resolve: async function () {
+          const _seed = await Seed.find({
+            region: params.id
+          }).exec();
 
+          const dates = _
+            .chain(_seed)
+            .groupBy('formatDate')
+            .map(function (value, key) {
+              return {
+                date: key,
+                total: value.length
+              }
+            })
+            .value();
+          return dates;
+        }
       }
     }
   }
