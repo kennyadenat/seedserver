@@ -374,7 +374,7 @@ const queryType = new GraphQLObjectType({
             type: GraphQLString
           }
         },
-        resolve: async function () {
+        resolve: async function (root, params) {
           const _seed = await Seed.find({
             region: params.id
           }).exec();
