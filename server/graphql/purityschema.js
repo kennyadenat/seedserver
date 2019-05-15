@@ -362,6 +362,9 @@ const mutation = new GraphQLObjectType({
           }
 
           if (exist) {
+
+            updateSeedSample(params);
+
             return Purity.findOneAndUpdate({
               referenceno: params.referenceno
             }, {
@@ -384,16 +387,18 @@ const mutation = new GraphQLObjectType({
               datetested: params.datetested,
             }, function (err) {
               if (err) return next(err);
-              updateSeedSample(params);
+
             });
           } else {
+
+            updateSeedSample(params);
 
             const _purity = new Purity(params);
             const newPurity = _purity.save();
             if (!newPurity) {
               throw new Error('Error');
             }
-            updateSeedSample(newPurity);
+
             return newPurity;
           }
         }
@@ -528,7 +533,8 @@ function updateSeedSample(params) {
   }, {
     puritykg: params.purityscorekg,
     purityper: params.purityscoreper,
-    purityremarks: params.remarks
+    purityremarks: params.remarks,
+    isPurity: true
   }, function (err) {
 
   })

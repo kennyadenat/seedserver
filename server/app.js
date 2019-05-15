@@ -7,6 +7,10 @@ const mongoose = require('mongoose');
 const graphqlHTTP = require('express-graphql');
 const keys = require('./config/key');
 const cors = require('cors');
+const moment = require('moment');
+
+this.NewDate = moment().add(0, 'd').format('YYYY-MM-DD');
+// console.log(this.NewDate);
 
 const mergeSchemas = require('graphql-tools').mergeSchemas;
 

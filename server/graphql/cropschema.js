@@ -152,7 +152,7 @@ const mutation = new GraphQLObjectType({
         type: cropType,
         args: {
           id: {
-            type: GraphQLNonNull(GraphQLString)
+            type: GraphQLString
           },
           name: {
             type: GraphQLNonNull(GraphQLString)
@@ -172,6 +172,7 @@ const mutation = new GraphQLObjectType({
         },
         resolve: function (root, params) {
           const _crop = new Crop(params);
+          _crop.id = _crop._id;
           const newCrop = _crop.save();
           if (!newCrop) {
             throw new Error('Error');
@@ -182,21 +183,23 @@ const mutation = new GraphQLObjectType({
       updateCrop: {
         type: cropType,
         args: {
+          _id: {
+            type: GraphQLNonNull(GraphQLString)
+          },
           id: {
-            name: 'id',
             type: GraphQLNonNull(GraphQLString)
           },
           name: {
             type: GraphQLNonNull(GraphQLString)
           },
           germpass: {
-            type: GraphQLNonNull(GraphQLString)
+            type: GraphQLNonNull(GraphQLInt)
           },
           purpass: {
-            type: GraphQLNonNull(GraphQLString)
+            type: GraphQLNonNull(GraphQLInt)
           },
           time: {
-            type: GraphQLNonNull(GraphQLString)
+            type: GraphQLNonNull(GraphQLInt)
           },
           tag: {
             type: GraphQLNonNull(GraphQLString)
@@ -204,7 +207,7 @@ const mutation = new GraphQLObjectType({
         },
         resolve: function (root, params) {
           return Crop.findOneAndUpdate({
-            _id: params.id
+            _id: params._id
           }, {
             name: params.name,
             germpass: params.germpass,

@@ -71,6 +71,14 @@ const SeedSchema = new Schema({
   time: {
     type: String
   },
+  isPurity: {
+    type: Boolean,
+    default: false
+  },
+  isGerm: {
+    type: Boolean,
+    default: false
+  },
   puritykg: {
     type: String
   },
@@ -134,6 +142,9 @@ SeedSchema.statics.generatereference = async function (params, callback) {
     region: params.region
   }).exec();
 
+
+  /* Calculates and Tracks the Reference 
+  Number for the Seed Sample */
   const counts = _track;
   if (!_track) {
     // Means there isnt any one here. 
@@ -143,10 +154,12 @@ SeedSchema.statics.generatereference = async function (params, callback) {
     return updateTrack(params, _counts, _track);
   } else if (_track.count >= 1) {
     // Already exists. Just fetch the last id and add. . 
-
     const _counts = _track.count + 1;
     const tests = reference + _counts.pad(5);
     params.referenceno = tests;
+
+    //Updates the Germination and Purity Set Date
+    params.time = moment().add(_crop.time, 'd').format('YYYY-MM-DD');;
     return updateTrack(params, _counts, _track);
   }
 
@@ -179,7 +192,20 @@ function updateTrack(params, counts, _track) {
 SeedSchema.virtual('formatDate').get(function () {
   // return this.createon;
   // return this.createon.toDateString();
-  return moment(this.createon).format('YYYY-MM-DD');
-})
+  return moment(this.createdon).format('YYYY-MM-DD');
+});
+
+SeedSchema.virtual('title').get(function () {
+  return this.source;
+});
+
+SeedSchema.virtual('url').get(function () {
+  return this.referenceno;
+});
+
+SeedSchema.virtual('date').get(function () {
+  return this.time;
+});
+
 
 const SeedSample = module.exports = mongoose.model('Seed', SeedSchema);

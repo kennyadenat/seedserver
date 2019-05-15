@@ -9,6 +9,9 @@ const GraphQLInt = require('graphql').GraphQLInt;
 const GraphQLDate = require('graphql-date');
 const Seed = require('../models/seedsample');
 const _ = require('underscore');
+const mongoose = require('mongoose');
+const moment = require('moment');
+
 
 
 const seedType = new GraphQLObjectType({
@@ -66,6 +69,12 @@ const seedType = new GraphQLObjectType({
       time: {
         type: GraphQLString
       },
+      isPurity: {
+        type: GraphQLBoolean
+      },
+      isGerm: {
+        type: GraphQLBoolean
+      },
       puritykg: {
         type: GraphQLString
       },
@@ -91,6 +100,23 @@ const seedType = new GraphQLObjectType({
         type: GraphQLString
       },
       germremarks: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+const calendarType = new GraphQLObjectType({
+  name: 'SeedCalendar',
+  fields: function () {
+    return {
+      url: {
+        type: GraphQLString
+      },
+      title: {
+        type: GraphQLString
+      },
+      date: {
         type: GraphQLString
       }
     }
@@ -146,6 +172,9 @@ const dataSampleCrop = new GraphQLObjectType({
       },
       total: {
         type: GraphQLString
+      },
+      percent: {
+        type: GraphQLString
       }
     }
   }
@@ -161,6 +190,9 @@ const dataSampleDate = new GraphQLObjectType({
       },
       total: {
         type: GraphQLString
+      },
+      percent: {
+        type: GraphQLString
       }
     }
   }
@@ -174,6 +206,9 @@ const dataSampleClass = new GraphQLObjectType({
         type: GraphQLString
       },
       total: {
+        type: GraphQLString
+      },
+      percent: {
         type: GraphQLString
       }
     }
@@ -201,7 +236,14 @@ const queryType = new GraphQLObjectType({
             type: GraphQLString
           }
         },
-        resolve: function (root, params) {
+        resolve: async function (root, params) {
+
+          // const _sseeds = await Seed.findOne({
+          //   referenceno: 'SWZ/2019/RR/00019'
+          // }).exec();
+
+          // console.log(_sseeds.formatDate);
+
           const options = {
             page: params.page,
             limit: params.limit,
@@ -293,12 +335,16 @@ const queryType = new GraphQLObjectType({
             type: GraphQLString
           }
         },
-        resolve: function (root, params) {
-          const _seed = Seed.findById(params.id).exec();
-          if (!_seed) {
-            throw new Error('Error');
-          }
-          return seed;
+        resolve: async function (root, params) {
+
+          // const _seed = await Seed.findById(params.id).exec();
+          // console.log(_seed);
+          return Seed.findOne({
+            referenceno: params.id
+          }, function (err) {
+            if (err) return next(err);
+          })
+
         }
       },
       searchseed: {
@@ -360,11 +406,16 @@ const queryType = new GraphQLObjectType({
             .map(function (value, key) {
               return {
                 class: key,
-                total: value.length
+                total: value.length,
+                percent: (value.length / _seed.length) * 100
               }
             })
             .value();
+
+          console.log(views);
           return views;
+
+
         }
       },
       dataSampleDate: {
@@ -391,10 +442,67 @@ const queryType = new GraphQLObjectType({
             .value();
           return dates;
         }
+      },
+      seedCalendar: {
+        type: new GraphQLList(calendarType),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _seed = await Seed.find({
+            region: params.id,
+            $or: [{
+                $and: [{
+                  isPurity: false
+                }, {
+                  isGerm: true
+                }]
+              },
+              {
+                $and: [{
+                  isPurity: false
+                }, {
+                  isGerm: false
+                }]
+              },
+              {
+                $and: [{
+                  isPurity: true
+                }, {
+                  isGerm: false
+                }]
+              }
+            ]
+          })
+          return _seed;
+        }
+      },
+      dueToday: {
+        type: new GraphQLList(seedType),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: function () {
+          const todaydate = moment().add(-4, 'd').format('YYYY-MM-DD');
+
+          console.log(todaydate);
+
+          return Seed.find({
+            time: todaydate
+          }, function (err) {
+            if (err) return next(err);
+          });
+
+        }
       }
     }
   }
 })
+
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
@@ -447,6 +555,9 @@ const mutation = new GraphQLObjectType({
           },
           createdon: {
             type: GraphQLDate
+          },
+          time: {
+            type: GraphQLString
           },
           // purity: {
           //   type: GraphQLInt

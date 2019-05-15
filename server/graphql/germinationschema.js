@@ -289,6 +289,9 @@ const query = new GraphQLObjectType({
         },
         resolve: async function (root, params) {
 
+          /* THis is used for one to many relationship. 
+           I.e when your calling a single item and wants to pick the 
+           additional models attached to it */
           const _germination = await Germination.findOne({
             _id: params.id
           }).populate({
@@ -314,7 +317,6 @@ const query = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          console.log(params);
           const _germination = await Germination.findOne({
             referenceno: params.search
           }).populate({
@@ -327,7 +329,6 @@ const query = new GraphQLObjectType({
           }).exec();
 
           if (_germination) {
-            console.log(_germination);
             return _germination;
           } else {
             const newGermination = new Germination();
@@ -466,6 +467,8 @@ const mutation = new GraphQLObjectType({
             params.remarks = "failed";
           }
 
+          updateSeedSample(params);
+
           /*  Check if it exists. If yes, update and 
           if no, create a new one */
           if (exist) {
@@ -493,7 +496,6 @@ const mutation = new GraphQLObjectType({
               createdon: params.createdon
             }, function (err) {
               // Updates the Seed Sample Detials
-              updateSeedSample(params);
 
               params.analysiscount.forEach(element => {
                 /* Check if Analysis count already exist. 
@@ -546,9 +548,6 @@ const mutation = new GraphQLObjectType({
 
             _germination.save(function (err) {
               if (err) console.log(err);
-
-              // Updates the Seed Sample Detials
-              updateSeedSample(params);
 
               params.analysiscount.forEach(element => {
                 const analysis = new AnalysisModel({
@@ -714,7 +713,7 @@ async function checkAnalysis(params, element) {
 }
 
 function updateSeedSample(params) {
-  Sample.findByIdAndUpdate({
+  Sample.findOneAndUpdate({
     referenceno: params.referenceno
   }, {
     normal: params.normal,
@@ -722,7 +721,8 @@ function updateSeedSample(params) {
     hard: params.hard,
     dead: params.dead,
     germper: params.germinationpercentage,
-    germremarks: params.remarks
+    germremarks: params.remarks,
+    isGerm: true
   }, function (err) {
 
   })
