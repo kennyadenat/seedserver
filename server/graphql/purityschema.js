@@ -277,6 +277,12 @@ const queryType = new GraphQLObjectType({
         },
         resolve: function (root, params) {
 
+          // Value for retrieving the Purity Statistics
+          return Purity.find({
+            region: params.id
+          }, function (err) {
+            if (err) return next(err);
+          })
         }
       }
     }
