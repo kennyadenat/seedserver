@@ -71,7 +71,7 @@ app.use('/nasc', cors(), graphqlHTTP({
 }));
 
 //Mongoose Connection Setup
-mongoose.connect(keys.mongodb.url, {
+mongoose.connect(keys.mongodb.prod, {
     promiseLibrary: require('bluebird'),
     useNewUrlParser: true
   })
