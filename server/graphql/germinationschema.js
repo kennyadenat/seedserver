@@ -16,6 +16,7 @@ const Crop = require('../models/crop');
 const _ = require('underscore');
 
 
+
 const analysisType = new GraphQLObjectType({
   name: 'AnalysisCount',
   fields: function () {
@@ -164,6 +165,30 @@ const germinationList = new GraphQLObjectType({
       pagingCounter: {
         type: GraphQLString
       }
+    }
+  }
+})
+
+
+const dataGerminationScore = new GraphQLObjectType({
+  name: 'dataGerminationScore',
+  fields: function () {
+    return {
+      total: {
+        type: GraphQLString
+      },
+      percent: {
+        type: GraphQLString
+      }
+    }
+  }
+})
+
+const dataGerminationStat = new GraphQLObjectType({
+  name: 'dataGerminationRemark',
+  fields: function () {
+    return {
+
     }
   }
 })
@@ -353,6 +378,51 @@ const query = new GraphQLObjectType({
             }
 
           }
+
+        }
+      },
+      germinationstats: {
+        type: new GraphQLList(germinationType),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
+
+          // Value for retrieving the Germination Statistics
+
+          return Germination.find({
+            region: params.id
+          }, function (err) {
+            if (err) return next(err);
+          })
+        }
+      },
+      germinationscore: {
+        type: new GraphQLList(dataGerminationScore),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+          const _germination = await Germination.find({
+            region: params.id
+          }).exec();
+
+          const views = _
+            .chain(_germination)
+            .groupBy('germinationpercentage')
+            .map(function (value, key) {
+              return {
+                percent: key,
+                total: value.length
+              }
+            })
+            .value();
+
+          return views;
 
         }
       }

@@ -237,13 +237,9 @@ const queryType = new GraphQLObjectType({
         },
         resolve: async function (root, params, pres) {
 
-          console.log(params);
           const _purity = await Purity.findOne({
             referenceno: params.search
           }).exec();
-
-          console.log(_purity);
-
           if (_purity) {
             return _purity;
           } else {
@@ -269,6 +265,17 @@ const queryType = new GraphQLObjectType({
             }
 
           }
+
+        }
+      },
+      puritystats: {
+        type: new GraphQLList(purityType),
+        args: {
+          id: {
+            type: GraphQLString
+          }
+        },
+        resolve: function (root, params) {
 
         }
       }
@@ -512,6 +519,7 @@ const mutation = new GraphQLObjectType({
     }
   }
 })
+
 
 function calculateRemarks(params) {
   let remarks = "failed";
