@@ -486,13 +486,36 @@ const queryType = new GraphQLObjectType({
             type: GraphQLString
           }
         },
-        resolve: function () {
-          const todaydate = moment().add(-4, 'd').format('YYYY-MM-DD');
+        resolve: function (root, params) {
+          const todaydate = moment().add(1, 'd').format('YYYY-MM-DD');
 
-          console.log(todaydate);
+          // console.log(todaydate);
 
           return Seed.find({
-            time: todaydate
+            region: params.id,
+            time: todaydate,
+            $or: [{
+                $and: [{
+                  isPurity: false
+                }, {
+                  isGerm: true
+                }]
+              },
+              {
+                $and: [{
+                  isPurity: false
+                }, {
+                  isGerm: false
+                }]
+              },
+              {
+                $and: [{
+                  isPurity: true
+                }, {
+                  isGerm: false
+                }]
+              }
+            ]
           }, function (err) {
             if (err) return next(err);
           });

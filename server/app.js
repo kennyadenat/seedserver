@@ -71,6 +71,7 @@ app.use('/nasc', cors(), graphqlHTTP({
 }));
 
 //Mongoose Connection Setup
+// Use url for dev and prod for production. 
 mongoose.connect(keys.mongodb.prod, {
     promiseLibrary: require('bluebird'),
     useNewUrlParser: true

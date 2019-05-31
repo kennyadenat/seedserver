@@ -134,7 +134,10 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _allCompany = await Company.findOne({
+
+          console.log(params);
+
+          const _allCompany = await Company.find({
             region: params.id
           }).exec();
 
