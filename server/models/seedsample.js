@@ -105,6 +105,9 @@ const SeedSchema = new Schema({
   },
   germremarks: {
     type: String,
+  },
+  refno: {
+    type: String,
   }
 
 }, {

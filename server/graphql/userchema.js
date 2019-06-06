@@ -167,6 +167,17 @@ const queryType = new GraphQLObjectType({
 
         }
       },
+      allcertusers: {
+        type: userList,
+        resolve: async function (root, params) {
+          const _crop = await User.find().sort('firstname').exec();
+          if (!_crop) {
+            throw new Error('Error');
+          }
+          return _crop;
+
+        }
+      },
       user: {
         type: userType,
         args: {

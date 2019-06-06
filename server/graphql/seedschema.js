@@ -252,13 +252,27 @@ const queryType = new GraphQLObjectType({
             }
           };
 
-          // Check if params.id is null or empty to determine the query type
-          return Seed.paginate({
-            region: params.id
-          }, options, function (err, resp) {
-            if (err) return next(err);
-            return resp;
-          });
+          console.log(params);
+          if (params.search) {
+            // Check if params.id is null or empty to determine the query type
+            return Seed.paginate({
+              region: params.id,
+              referenceno: {
+                $regex: new RegExp("^" + params.search.toLowerCase(), "i")
+              }
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          } else {
+            // Check if params.id is null or empty to determine the query type
+            return Seed.paginate({
+              region: params.id
+            }, options, function (err, resp) {
+              if (err) return next(err);
+              return resp;
+            });
+          }
         }
       },
       adminseeds: {
@@ -337,10 +351,28 @@ const queryType = new GraphQLObjectType({
         },
         resolve: async function (root, params) {
 
-          // const _seed = await Seed.findById(params.id).exec();
-          // console.log(_seed);
+          // const _seed = await Seed.findById(params.id).exec();        
           return Seed.findOne({
             referenceno: params.id
+          }, function (err) {
+            if (err) return next(err);
+          })
+
+        }
+      },
+      oneseed: {
+        type: seedType,
+        args: {
+          id: {
+            name: '_id',
+            type: GraphQLString
+          }
+        },
+        resolve: async function (root, params) {
+
+          // const _seed = await Seed.findById(params.id).exec();          
+          return Seed.findOne({
+            _id: params.id
           }, function (err) {
             if (err) return next(err);
           })
