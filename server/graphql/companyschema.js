@@ -258,9 +258,16 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _company = await Company.find({
-            region: params.id
-          }).exec();
+
+          var _company = null;
+
+          if (params.id == 'All Regions') {
+            _company = await Company.find({}).exec();
+          } else {
+            _company = await Company.find({
+              region: params.id
+            }).exec();
+          }
 
           const views = _
             .chain(_company)
@@ -284,9 +291,16 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _company = await Company.find({
-            region: params.id
-          }).exec();
+
+          var _company = null;
+
+          if (params.id == 'All Regions') {
+            _company = await Company.find({}).exec();
+          } else {
+            _company = await Company.find({
+              region: params.id
+            }).exec();
+          }
 
           var dates = _
             .chain(_company)

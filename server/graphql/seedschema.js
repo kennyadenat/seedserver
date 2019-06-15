@@ -403,9 +403,16 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _seed = await Seed.find({
-            region: params.id
-          }).exec();
+
+          var _seed = null;
+
+          if (params.id == 'All Regions') {
+            _seed = await Seed.find({}).exec();
+          } else {
+            _seed = await Seed.find({
+              region: params.id
+            }).exec();
+          }
 
           const views = _
             .chain(_seed)
@@ -428,9 +435,15 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _seed = await Seed.find({
-            region: params.id
-          }).exec();
+
+          var _seed = null;
+          if (params.id == 'All Regions') {
+            _seed = await Seed.find({}).exec();
+          } else {
+            _seed = await Seed.find({
+              region: params.id
+            }).exec();
+          }
 
           const views = _
             .chain(_seed)
@@ -458,9 +471,15 @@ const queryType = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _seed = await Seed.find({
-            region: params.id
-          }).exec();
+
+          var _seed = null;
+          if (params.id == 'All Regions') {
+            _seed = await Seed.find({}).exec();
+          } else {
+            _seed = await Seed.find({
+              region: params.id
+            }).exec();
+          }
 
           const dates = _
             .chain(_seed)

@@ -391,12 +391,19 @@ const query = new GraphQLObjectType({
         resolve: function (root, params) {
 
           // Value for retrieving the Germination Statistics
+          if (params.id == 'All Regions') {
+            return Germination.find({}, function (err) {
+              if (err) return next(err);
+            })
+          } else {
+            return Germination.find({
+              region: params.id
+            }, function (err) {
+              if (err) return next(err);
+            })
+          }
 
-          return Germination.find({
-            region: params.id
-          }, function (err) {
-            if (err) return next(err);
-          })
+
         }
       },
       germinationscore: {
@@ -407,9 +414,16 @@ const query = new GraphQLObjectType({
           }
         },
         resolve: async function (root, params) {
-          const _germination = await Germination.find({
-            region: params.id
-          }).exec();
+
+          var _germination = null;
+
+          if (params.id == 'All Regions') {
+            _germination = await Germination.find({}).exec();
+          } else {
+            _germination = await Germination.find({
+              region: params.id
+            }).exec();
+          }
 
           const views = _
             .chain(_germination)
