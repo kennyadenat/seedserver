@@ -6,10 +6,13 @@ const logger = require('morgan');
 const mongoose = require('mongoose');
 const graphqlHTTP = require('express-graphql');
 const keys = require('./config/key');
+const middleware = require('./config/middleware');
 const cors = require('cors');
 const moment = require('moment');
 
-this.NewDate = moment().add(0, 'd').format('YYYY-MM-DD');
+middleware.States();
+
+//this.NewDate = moment().add(0, 'd').format('YYYY-MM-DD');
 // console.log(this.NewDate);
 
 const mergeSchemas = require('graphql-tools').mergeSchemas;
@@ -47,6 +50,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('*', cors());
 
+
+// All Graphql Schema
 const allSchema = mergeSchemas({
   schemas: [
     stateSchema,
@@ -72,7 +77,7 @@ app.use('/nasc', cors(), graphqlHTTP({
 
 //Mongoose Connection Setup
 // Use url for dev and prod for production. 
-mongoose.connect(keys.mongodb.prod, {
+mongoose.connect(keys.mongodb.dev, {
     promiseLibrary: require('bluebird'),
     useNewUrlParser: true
   })

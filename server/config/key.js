@@ -11,7 +11,7 @@ module.exports = {
     dbName: "seedpro"
   },
   session: {
-    cookieKey: "icanhehtyurjnghnk575768nnfhndvj4iunfurnnbg"
+    cookieKey: "ycangehtyurjnghnk2258795nnfhndvj4iunfurnnbg"
   },
   secret: "edrxfctgvyhubijnko5467yuiordcfv45655fgdttejdorywudn756672mmsgyfus",
   port: process.env.PORT || 4000

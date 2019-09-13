@@ -1,8 +1,8 @@
 // const MongoPagination = require('mongo-cursor-pagination');
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
-const uniqueValidator = require("mongoose-unique-validator")
-const crypto = require("crypto")
+const uniqueValidator = require("mongoose-unique-validator");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const authTypes = ['github', 'twitter', 'facebook', 'google'];
 const mongoosePaginate = require('mongoose-paginate-v2');
@@ -41,16 +41,15 @@ const UserSchema = new Schema({
   createdon: {
     type: Date,
     default: Date.now
+  },
+  lastlogin: {
+    type: Date
   }
 }, {
   timestamps: true
 });
 
 UserSchema.plugin(mongoosePaginate);
-
-// UserSchema.plugin(MongoPagination.mongoosePlugin, {
-//   name: 'paginateFN'
-// });
 
 UserSchema.plugin(uniqueValidator, {
   message: "is already taken"

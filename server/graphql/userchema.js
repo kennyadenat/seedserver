@@ -57,6 +57,9 @@ const userType = new GraphQLObjectType({
     },
     createdon: {
       type: GraphQLDate
+    },
+    lastlogin: {
+      type: GraphQLDate
     }
   })
 });
@@ -170,12 +173,11 @@ const queryType = new GraphQLObjectType({
       allcertusers: {
         type: userList,
         resolve: async function (root, params) {
-          const _crop = await User.find().sort('firstname').exec();
-          if (!_crop) {
+          const _cert = await User.find().sort('firstname').exec();
+          if (!_cert) {
             throw new Error('Error');
           }
-          return _crop;
-
+          return _cert;
         }
       },
       user: {

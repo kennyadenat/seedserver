@@ -527,6 +527,8 @@ const queryType = new GraphQLObjectType({
               }
             ]
           })
+
+          console.log(_seed);
           return _seed;
         }
       },
